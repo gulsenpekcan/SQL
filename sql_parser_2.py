@@ -13,8 +13,8 @@ def preprocess_query(query):
     query = re.sub(r'(?m)^[\s]*\-.*\n?', r'', query)
     # v_message icerigi lazim olmadigi icin o satirlari kaldiriyoruz ki gereksiz tablo isimlerini bulmayalim
     query = re.sub(r'(?m)^[\s]*v_message.*\n?', r'', query)
-    # verilen query icerisindeki .,:;=- karakterleri yerine bosluk koyar
-    query = re.sub(r'[.,:;=-]', ' ', query)
+    # verilen query icerisindeki .,:;()=- karakterleri yerine bosluk koyar
+    query = re.sub(r'[.,:;()=-]', r' ', query)
     # query'de '|.....|' (pipe) karakterleri arasinda kalanlari kaldirir
     query = re.sub(r'\'\|.*?\|\'', r'', query)
     # query'deki ' karakterlerinin yerine bosluk koyar
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     # sql uzantili dosya okunup string olarak alinir
     #sqlfile = "C:/Users/gulsen.pekcan/Downloads/cutomer.sql"
     
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/prod_summary.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/fact_sales.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
 
 
