@@ -11,6 +11,8 @@ def preprocess_query(query):
     query = re.sub(r'/\*.*?\*/', r'', query, flags = re.DOTALL)
     # query'deki -- ile başlayan satirlari siler
     query = re.sub(r'(?m)^[\s]*\-.*\n?', r'', query)
+    # v_message icerigi lazim olmadigi icin o satirlari kaldiriyoruz ki gereksiz tablo isimlerini bulmayalim
+    query = re.sub(r'(?m)^[\s]*v_message.*\n?', r'', query)
     # verilen query icerisindeki .,:;=- karakterleri yerine bosluk koyar
     query = re.sub(r'[.,:;=-]', ' ', query)
     # query'de '|.....|' (pipe) karakterleri arasinda kalanlari kaldirir
@@ -26,38 +28,37 @@ def get_tables_names(query):
 
     # query'i bosluk karakterinden tokenlara ayirir
     tokens = re.split(r"[\s]+", query)
-
-    print(tokens)
+    
     indices_join = []
     indices_from = []
-    #indices_with = []
+    indices_with = []
 
     for i in range(len(tokens)):
         if tokens[i] == 'JOIN' or tokens[i] == 'join':
             indices_join.append(i)
         elif tokens[i] == 'FROM' or tokens[i] == 'from':
             indices_from.append(i)
-        #elif tokens[i] == 'WITH' or tokens[i] == 'with':
-        #   indices_with.append(i)
+        elif tokens[i] == 'WITH' or tokens[i] == 'with':
+           indices_with.append(i)
 
     # tokenlarin icerisinden tablo isimlerini cekmeye yarayan bloklar
     tb_names = []
     for j in indices_join:
-        if(tokens[j+1][:1] != "_"):
+        if tokens[j+1][:1] != "_":
             tb_names.append(tokens[j+1])
         else:
             pass
 
     for j in indices_from:
-        if(tokens[j+1][:1] != "_" and tokens[j+1][:1] != "("):
+        if tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(":
             tb_names.append(tokens[j+1])
         else:
             pass
 
-    """
+    
     for j in indices_with:
-        tb_names.append(tokens[j+1])
-    """
+        if tokens[j+1] in tb_names:
+            tb_names.remove(tokens[j+1])    
 
     # tablodaki elemanlarin tekligi kesinlestirilir
     tb_names = list(set(tb_names))
