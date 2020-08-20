@@ -44,13 +44,15 @@ def get_tables_names(query):
     # tokenlarin icerisinden tablo isimlerini cekmeye yarayan bloklar
     tb_names = []
     for j in indices_join:
-        if tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1]:
+        if tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1] \
+            and "temp_" not in tokens[j+1]:
             tb_names.append(tokens[j+1])
         else:
             pass
 
     for j in indices_from:
-        if tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1]:
+        if tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1] \
+            and "temp_" not in tokens[j+1]:
             tb_names.append(tokens[j+1])
         else:
             pass
@@ -61,6 +63,7 @@ def get_tables_names(query):
             tb_names.remove(tokens[j+1])   
         elif tokens[j+2] in tb_names:
             tb_names.remove(tokens[j+2])
+    
 
     # tablodaki elemanlarin tekligi kesinlestirilir
     tb_names = list(set(tb_names))
@@ -70,9 +73,7 @@ def get_tables_names(query):
 if __name__ == '__main__':
 
     # sql uzantili dosya okunup string olarak alinir
-    #sqlfile = "C:/Users/gulsen.pekcan/Downloads/cutomer.sql"
-    
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/fact_sales.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/order_summary.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
 
 
