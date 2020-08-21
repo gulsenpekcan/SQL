@@ -16,7 +16,7 @@ def preprocess_query(query):
     # verilen query icerisindeki .,:;()=- karakterleri yerine bosluk koyar
     query = re.sub(r'[.,:;()=-]', r' ', query)
     # query'de '|.....|' (pipe) karakterleri arasinda kalanlari kaldirir
-    query = re.sub(r'\'\|.*?\|\'', r'', query)
+    query = re.sub(r'\'[\s]*\|.*?\|[\s]*\'', r'', query)
     # query'deki ' karakterlerinin yerine bosluk koyar
     query = re.sub(r'[\']+', r'', query)
     # satir atlama kisimlarini bosluk ile degistirir
@@ -28,10 +28,11 @@ def get_tables_names(query):
 
     # query'i bosluk karakterinden tokenlara ayirir
     tokens = re.split(r"[\s]+", query)
-    
+
     indices_join = []
     indices_from = []
     indices_with = []
+    indices_as = []
 
     for i in range(len(tokens)):
         if tokens[i] == 'JOIN' or tokens[i] == 'join':
@@ -39,7 +40,15 @@ def get_tables_names(query):
         elif tokens[i] == 'FROM' or tokens[i] == 'from':
             indices_from.append(i)
         elif tokens[i] == 'WITH' or tokens[i] == 'with':
-           indices_with.append(i)
+            for k in range(i, i+20):
+                indices_with.append(i)
+                if tokens[k] == 'AS' or tokens[k] == 'as':
+                    indices_as.append(k)
+                else:
+                    pass
+        else:
+            pass
+
 
     # tokenlarin icerisinden tablo isimlerini cekmeye yarayan bloklar
     tb_names = []
@@ -57,13 +66,15 @@ def get_tables_names(query):
         else:
             pass
 
-    
     for j in indices_with:
         if tokens[j+1] in tb_names:
-            tb_names.remove(tokens[j+1])   
+            tb_names.remove(tokens[j+1])
         elif tokens[j+2] in tb_names:
             tb_names.remove(tokens[j+2])
-    
+
+    for j in indices_as:
+        if tokens[j-1] in tb_names:
+            tb_names.remove(tokens[j-1])
 
     # tablodaki elemanlarin tekligi kesinlestirilir
     tb_names = list(set(tb_names))
@@ -73,9 +84,8 @@ def get_tables_names(query):
 if __name__ == '__main__':
 
     # sql uzantili dosya okunup string olarak alinir
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/order_summary.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/fact_dvr_change.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
-
 
     # string uzerinde on isleme gerceklestirilir
     sql_query = preprocess_query(sql_query)
