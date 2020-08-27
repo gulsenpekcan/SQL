@@ -34,10 +34,16 @@ def get_tables_names(query):
     indices_with = []
     indices_as = []
 
+
+    if 'common_variable_proc_id' in tokens:
+        func_name = tokens[tokens.index('common_variable_proc_id') + 1]
+    else:
+        indx = tokens.index('FUNCTION')
+        func_name = tokens[indx + 2]
+        
+
     for i in range(len(tokens)):
-        if tokens[i] == 'common_variable_proc_id':
-            func_name = tokens[i+1]
-        elif tokens[i] == 'JOIN' or tokens[i] == 'join':
+        if tokens[i] == 'JOIN' or tokens[i] == 'join':
             indices_join.append(i)
         elif tokens[i] == 'FROM' or tokens[i] == 'from':
             indices_from.append(i)
@@ -84,10 +90,11 @@ def get_tables_names(query):
 
     # tablodaki elemanlarin tekligi kesinlestirilir
     tb_names = list(set(tb_names))
-    
+
+
     _indices = [i for i in range(len(func_name)) if func_name[i] == '_']
     func_name = func_name[_indices[0]+1:_indices[-1]]
-    
+
     for table_name in tb_names:
         table_name_split = table_name.split(func_name)
         if func_name in table_name:
@@ -98,13 +105,13 @@ def get_tables_names(query):
         else:
             pass
 
-
     return tb_names
+
 
 if __name__ == '__main__':
 
     # sql uzantili dosya okunup string olarak alinir
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/fact_sales.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/fact_sales_hstr_proc_create_script.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
 
     # string uzerinde on isleme gerceklestirilir
