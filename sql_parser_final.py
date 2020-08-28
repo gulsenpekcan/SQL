@@ -16,7 +16,7 @@ def preprocess_query(query):
     # verilen query icerisindeki .,:;()=- karakterleri yerine bosluk koyar
     query = re.sub(r'[.,:;()=-]', r' ', query)
     # query'de '|.....|' (pipe) karakterleri arasinda kalanlari kaldirir
-    query = re.sub(r'\'[\s]*\|.*?\|[\s]*\'', r'', query)
+    query = re.sub(r'\'[\s]*\|.*?\|[\s]*\'', r' ', query)
     # query'deki ' karakterlerinin yerine bosluk koyar
     query = re.sub(r'[\']+', r'', query)
     # satir atlama kisimlarini bosluk ile degistirir
@@ -33,15 +33,15 @@ def get_tables_names(query):
     indices_from = []
     indices_with = []
     indices_as = []
-
+    indices_insert = []
+    indices_select = []
 
     if 'common_variable_proc_id' in tokens:
         func_name = tokens[tokens.index('common_variable_proc_id') + 1]
     else:
         indx = tokens.index('FUNCTION')
         func_name = tokens[indx + 2]
-        
-
+    
     for i in range(len(tokens)):
         if tokens[i] == 'JOIN' or tokens[i] == 'join':
             indices_join.append(i)
@@ -54,6 +54,10 @@ def get_tables_names(query):
                     indices_as.append(k)
                 else:
                     pass
+        elif tokens[i] == 'INSERT':
+            indices_insert.append(i)
+        elif tokens[i] == 'select':
+            indices_select.append(i)
         else:
             pass
 
@@ -73,6 +77,20 @@ def get_tables_names(query):
             tb_names.append(tokens[j+1])
         else:
             pass
+        
+    for j in indices_insert:
+        if tokens[j+2][:1] != "_" and tokens[j+2][:1] != "(" and "_" in tokens[j+2] \
+            and "temp_" not in tokens[j+2] and tokens[j+1] == "INTO":
+            tb_names.append(tokens[j+2])
+        else:
+            pass
+ 
+    for j in indices_select:
+        if tokens[j+1][:6] != "common" and tokens[j+2] == "_":
+            tb_names.append(tokens[j+1])
+        else:
+            pass
+
 
     for j in indices_with:
         if tokens[j+1] in tb_names:
@@ -88,17 +106,18 @@ def get_tables_names(query):
         else:
             pass
 
+
     # tablodaki elemanlarin tekligi kesinlestirilir
     tb_names = list(set(tb_names))
 
-
     _indices = [i for i in range(len(func_name)) if func_name[i] == '_']
     func_name = func_name[_indices[0]+1:_indices[-1]]
-
+    
     for table_name in tb_names:
         table_name_split = table_name.split(func_name)
         if func_name in table_name:
-            if table_name_split[0].count('_') > 1:
+            table_name_split = list(filter(None, table_name_split))
+            if table_name_split[0].count('_') > 1 and len(table_name_split) < 2:
                 tb_names.remove(table_name)
             else:
                 pass
@@ -111,9 +130,9 @@ def get_tables_names(query):
 if __name__ == '__main__':
 
     # sql uzantili dosya okunup string olarak alinir
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/fact_sales_hstr_proc_create_script.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/tbl_down_pymnt_by_pass_proc_create_script.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
-
+    
     # string uzerinde on isleme gerceklestirilir
     sql_query = preprocess_query(sql_query)
 
