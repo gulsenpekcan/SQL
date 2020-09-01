@@ -14,7 +14,9 @@ def preprocess_query(query):
     # v_message icerigi lazim olmadigi icin o satirlari kaldiriyoruz ki gereksiz tablo isimlerini bulmayalim
     query = re.sub(r'(?m)^[\s]*v_message.*\n?', r'', query)
     # verilen query icerisindeki .,:;()=- karakterleri yerine bosluk koyar
-    query = re.sub(r'[.,:;()=-]', r' ', query)
+    query = re.sub(r'[.:;()=-]', r' ', query)
+    # verilen query icerisindeki , karakterlerini önceki kelimeden ayirir
+    query = re.sub(r',', r' ,', query)
     # query'de '|.....|' (pipe) karakterleri arasinda kalanlari kaldirir
     query = re.sub(r'\'[\s]*\|.*?\|[\s]*\'', r' ', query)
     # query'deki ' karakterlerinin yerine bosluk koyar
@@ -61,7 +63,6 @@ def get_tables_names(query):
         else:
             pass
 
-
     # tokenlarin icerisinden tablo isimlerini cekmeye yarayan bloklar
     tb_names = []
     for j in indices_join:
@@ -72,11 +73,24 @@ def get_tables_names(query):
             pass
 
     for j in indices_from:
-        if tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1] \
+        i = 1
+        if tokens[j+3] == ',' and tokens[j+1].lower() != 'select' and tokens[j+4].lower() != 'select':
+            while tokens[j+2+i] == ',':
+                if tokens[j+i][:1] != "_" and tokens[j+i][:1] != "(" and "_" in tokens[j+i] \
+                    and "temp_" not in tokens[j+i]:
+                        tb_names.append(tokens[j+i])
+                else:
+                    pass
+                i += 3
+            if tokens[j+i][:1] != "_" and tokens[j+i][:1] != "(" and "_" in tokens[j+i] \
+                    and "temp_" not in tokens[j+i]:
+                        tb_names.append(tokens[j+i])
+        elif tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1] \
             and "temp_" not in tokens[j+1]:
-            tb_names.append(tokens[j+1])
+                tb_names.append(tokens[j+1])
         else:
             pass
+                
         
     for j in indices_insert:
         if tokens[j+2][:1] != "_" and tokens[j+2][:1] != "(" and "_" in tokens[j+2] \
@@ -114,23 +128,21 @@ def get_tables_names(query):
     func_name = func_name[_indices[0]+1:_indices[-1]]
     
     for table_name in tb_names:
-        table_name_split = table_name.split(func_name)
-        if func_name in table_name:
-            table_name_split = list(filter(None, table_name_split))
-            if table_name_split[0].count('_') > 1 and len(table_name_split) < 2:
+        table_name_split = table_name.split('_')
+        if "pre" in table_name_split:
+            tb_name_pre_split = table_name.split("pre_")
+            if func_name in tb_name_pre_split:
                 tb_names.remove(table_name)
-            else:
-                pass
         else:
             pass
-
+        
     return tb_names
 
 
 if __name__ == '__main__':
 
     # sql uzantili dosya okunup string olarak alinir
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/tbl_down_pymnt_by_pass_proc_create_script.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/sql/fact_pymnt_crrctn_proc_create_script.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
     
     # string uzerinde on isleme gerceklestirilir
