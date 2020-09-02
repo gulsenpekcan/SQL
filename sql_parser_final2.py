@@ -10,7 +10,7 @@ def preprocess_query(query):
     # query'deki /*******/, /* comments */ yapilarini kaldirmak icin kullanilir
     query = re.sub(r'/\*.*?\*/', r'', query, flags = re.DOTALL)
     # query'deki -- ile başlayan satirlari siler
-    query = re.sub(r'(?m)^[\s]*\-.*\n?', r'', query)
+    # query = re.sub(r'(?m)^[\s]*\-.*\n?', r'', query)
     # v_message icerigi lazim olmadigi icin o satirlari kaldiriyoruz ki gereksiz tablo isimlerini bulmayalim
     query = re.sub(r'(?m)^[\s]*v_message.*\n?', r'', query)
     # verilen query icerisindeki .,:;()=- karakterleri yerine bosluk koyar
@@ -83,10 +83,10 @@ def get_tables_names(query):
                     pass
                 i += 3
             if tokens[j+i][:1] != "_" and tokens[j+i][:1] != "(" and "_" in tokens[j+i] \
-                    and "temp_" not in tokens[j+i]:
+                    and "temp_" not in tokens[j+i] and tokens[j+2] != "and":
                         tb_names.append(tokens[j+i])
         elif tokens[j+1][:1] != "_" and tokens[j+1][:1] != "(" and "_" in tokens[j+1] \
-            and "temp_" not in tokens[j+1]:
+            and "temp_" not in tokens[j+1] and tokens[j+2] != "and":
                 tb_names.append(tokens[j+1])
         else:
             pass
@@ -142,7 +142,7 @@ def get_tables_names(query):
 if __name__ == '__main__':
 
     # sql uzantili dosya okunup string olarak alinir
-    sqlfile = "C:/Users/gulsen.pekcan/Downloads/sql/fact_pymnt_crrctn_proc_create_script.sql"
+    sqlfile = "C:/Users/gulsen.pekcan/Downloads/trn_usage_summary_proc_create_script.sql"
     sql_query = open(sqlfile, mode='r', encoding='utf-8-sig').read()
     
     # string uzerinde on isleme gerceklestirilir
